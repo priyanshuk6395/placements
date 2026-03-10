@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion,Variants } from "framer-motion";
 import { Lock, User, ShieldCheck, Loader2, ChevronRight } from "lucide-react";
 
 export default function LoginPage() {
@@ -33,18 +33,29 @@ export default function LoginPage() {
   };
 
   // Animation variants for staggered entrance
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0, y: 30 },
     visible: { 
       opacity: 1, 
       y: 0, 
-      transition: { duration: 0.6, staggerChildren: 0.1, ease: "easeOut" } 
+      transition: { 
+        duration: 0.6, 
+        staggerChildren: 0.1, 
+        // Using a cubic-bezier array instead of a string fixes the type error 
+        // and provides a much smoother, high-end animation feel
+        ease: [0.22, 1, 0.36, 1] 
+      } 
     }
   };
 
-  const itemVariants = {
+  
+const itemVariants: Variants = {
     hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 }
+    visible: { 
+      opacity: 1, 
+      x: 0,
+      transition: { ease: [0.22, 1, 0.36, 1] }
+    }
   };
 
   return (
