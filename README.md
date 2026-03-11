@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# Placement Tracker
 
-First, run the development server:
+## Overview
+
+Placement Tracker is a robust, production-grade web application designed to streamline and manage campus placement data. Built with Next.js, React, TypeScript, and Tailwind CSS, it leverages modern authentication, modular architecture, and scalable best practices. The project is engineered for maintainability, extensibility, and high performance.
+
+## Features
+
+- **Next.js App Router**: SSR, SSG, and API routes for optimal performance and flexibility.
+- **TypeScript**: Strict typing, interfaces, and type safety across the codebase.
+- **Tailwind CSS**: Utility-first styling for rapid UI development.
+- **Authentication**: Secure login via NextAuth.js.
+- **MongoDB Integration**: Persistent storage for placement records.
+- **File Uploads**: Managed via API routes.
+- **Dashboard**: Real-time stats, company logos, placement tables, and analytics.
+- **Modular Components**: Reusable UI and dashboard elements.
+- **Linting & Formatting**: ESLint, Prettier, and strict code quality enforcement.
+
+## Folder Structure
+
+```
+src/
+	app/           # Next.js app router, pages, layouts, API routes
+		api/         # API endpoints (auth, upload)
+		login/       # Login page
+		components/  # UI and dashboard components
+		lib/         # Database connection, utilities
+		models/      # Mongoose schemas
+public/          # Static assets
+config/          # ESLint, Tailwind, PostCSS configs
+```
+
+## Setup & Installation
+
+### Prerequisites
+- Node.js >= 18
+- npm >= 9
+- MongoDB instance (local or cloud)
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```
+MONGODB_URI=
+LOGODEV_API_KEY=
+NEXTAUTH_SECRET=
+ADMIN_USERNAME=
+ADMIN_PASSWORD=
+NEXTAUTH_URL=
+```
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Build & Production
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Lint & Format
 
-## Learn More
+```bash
+npm run lint
+npm run format
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Testing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+> Add unit/integration tests as needed. Recommended: Jest, React Testing Library.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contributing
 
-## Deploy on Vercel
+- Follow Conventional Commits.
+- Write clear, maintainable code.
+- Add tests for new features.
+- Run lint and format before pushing.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
+
+---
+
+### Maintainer Notes
+
+- Designed for extensibility: add new features with minimal refactoring.
+- Modular, clean codebase: easy onboarding for new developers.
+- Secure by default: authentication, input validation, and error handling.
+- Performance optimized: SSR, SSG, and API caching.
+- Production ready: strict linting, formatting, and CI/CD friendly.
+
+For questions, open an issue or contact the maintainer.
