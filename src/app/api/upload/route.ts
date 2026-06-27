@@ -20,6 +20,8 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
+    const batchString = formData.get('batch') as string;
+    const batchYear = parseInt(batchString.split('-')[1]);
     const buffer = await file.arrayBuffer();
     const workbook = XLSX.read(buffer);
     const rawData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
@@ -142,7 +144,8 @@ export async function POST(req: NextRequest) {
                 stipend: stipendValue,
                 date: finalDate, // Now strictly sanitized
                 linkedin: getRawVal("Linkdein").trim(),
-                logoData: logoData
+                logoData: logoData,
+                batchYear
               }
             },
             upsert: true,

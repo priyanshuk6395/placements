@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { motion,Variants } from "framer-motion";
+import { motion } from "framer-motion";
+import type { Variants } from "framer-motion";
 import { Lock, User, ShieldCheck, Loader2, ChevronRight } from "lucide-react";
 
 export default function LoginPage() {
@@ -24,7 +25,7 @@ export default function LoginPage() {
     });
 
     if (res?.ok) {
-      router.push("/");
+      router.push("/admin");
       router.refresh();
     } else {
       setError("Unauthorized Access: Credentials Mismatch");
