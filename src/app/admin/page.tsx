@@ -4,13 +4,19 @@ import TrafficLog from '@/models/TrafficLog';
 import Visitor from '@/models/Visitor';
 import DashboardClient from '@/components/dashboard/DashboardClient';
 import LogoutButton from '@/components/dashboard/LogoutButton';
+import BatchFilter from '@/components/dashboard/BatchFilter'; 
 import { getServerSession } from "next-auth/next";
 import { ShieldCheck } from "lucide-react";
 
-async function getAdminData() {
+async function getAdminData(batchYear?: string) {
   await dbConnect();
   
-  const allPlacements = await Placement.find().sort({ createdAt: -1 }).lean();
+  // Get all unique years to build the filter list
+  const years = (await Placement.distinct("batchYear")).sort((a, b) => b - a);
+  const selectedYear = batchYear ? parseInt(batchYear) : (years[0] || new Date().getFullYear());
+
+  // Filter placements by selected year
+  const allPlacements = await Placement.find({ batchYear: selectedYear }).sort({ createdAt: -1 }).lean();
   
   const total = allPlacements.length;
   const avg = total > 0 ? allPlacements.reduce((acc: number, curr: any) => acc + (curr.ctc || 0), 0) / total : 0;
@@ -24,19 +30,25 @@ async function getAdminData() {
     placements: JSON.parse(JSON.stringify(allPlacements)),
     logs: JSON.parse(JSON.stringify(trafficLogs)),
     visitors: JSON.parse(JSON.stringify(visitors)),
-    stats: { avg, total, highest, companies }
+    stats: { avg, total, highest, companies },
+    availableYears: years,
+    selectedYear
   };
 }
 
-export default async function AdminDashboard() {
-  const { placements, logs, stats } = await getAdminData();
-  await getServerSession(); // Secure check
+export default async function AdminDashboard({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ batchYear?: string }> 
+}) {
+  const params = await searchParams;
+  const { placements, logs, visitors, stats, availableYears, selectedYear } = await getAdminData(params.batchYear);
+  await getServerSession();
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-200">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-8">
         
-        {/* Secure Admin Header */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-primary/10 border border-primary/20 rounded-2xl flex items-center justify-center">
@@ -51,13 +63,13 @@ export default async function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-4 bg-white dark:bg-slate-900/50 p-2 pr-4 rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm glass">
+            {/* Filter component added next to Logout */}
+            <BatchFilter years={availableYears} current={selectedYear} />
             <LogoutButton />
           </div>
         </header>
 
-        {/* The Unified Tabbed Workspace */}
-        <DashboardClient placements={placements} logs={logs} stats={stats} />
-        
+        <DashboardClient placements={placements} logs={logs} stats={stats} visitors={visitors} />
       </div>
     </div>
   );
