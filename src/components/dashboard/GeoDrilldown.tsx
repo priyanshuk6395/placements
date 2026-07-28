@@ -122,13 +122,13 @@ export default function GeoDrilldown({ logs }: GeoDrilldownProps) {
   };
 
   return (
-    <section className="p-6 bg-slate-900/50 border border-white/5 rounded-3xl shadow-sm min-h-[420px] flex flex-col">
+    <section className="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-3xl shadow-sm min-h-105 flex flex-col">
       <div className="flex items-center justify-between gap-4 mb-5">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center gap-2">
             <MapPinned className="w-4 h-4 text-cyan-400" /> Geographic Drilldown
           </p>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             {level === "country" && "Tap a country to explore regions and cities."}
             {level === "region" && `Viewing regions in ${selectedCountry}.`}
             {level === "city" && `Viewing cities in ${selectedRegion}, ${selectedCountry}.`}
@@ -139,14 +139,14 @@ export default function GeoDrilldown({ logs }: GeoDrilldownProps) {
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold uppercase tracking-wider text-slate-200"
+            className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200"
           >
             <ChevronLeft className="w-4 h-4" /> Back
           </button>
         )}
       </div>
 
-      <div className="mb-4 flex items-center gap-2 text-xs text-slate-400 min-h-6">
+      <div className="mb-4 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 min-h-6">
         <Globe2 className="w-4 h-4" />
         <span>
           {selectedCountry || "All Countries"}
@@ -187,12 +187,12 @@ export default function GeoDrilldown({ logs }: GeoDrilldownProps) {
                     key={item.key}
                     type="button"
                     onClick={canDrill ? handleSelect : undefined}
-                    className="w-full relative text-left p-3 rounded-2xl border border-white/10 bg-slate-950/50 hover:bg-slate-900/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+                    className="w-full relative text-left p-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950/50 hover:bg-slate-100 dark:hover:bg-slate-900/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
                     aria-label={`${item.key} ${item.count} visits${canDrill ? ", drill down" : ""}`}
                   >
                     <motion.div
                       layoutId={`geo-bar-${level}-${item.key}`}
-                      className="absolute inset-y-0 left-0 rounded-2xl bg-gradient-to-r from-cyan-500/25 to-transparent"
+                      className="absolute inset-y-0 left-0 rounded-2xl bg-linear-to-r from-cyan-500/25 to-transparent"
                       style={{ width: `${ratio}%` }}
                     />
                     <div className="relative z-10 flex items-center justify-between gap-3">
@@ -202,7 +202,7 @@ export default function GeoDrilldown({ logs }: GeoDrilldownProps) {
                         ) : (
                           <span className="w-2 h-2 rounded-full bg-cyan-400" />
                         )}
-                        <span className="truncate text-sm font-semibold text-slate-100">{item.key}</span>
+                        <span className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">{item.key}</span>
                       </div>
                       <span className="text-xs font-black text-cyan-300">{item.count}</span>
                     </div>

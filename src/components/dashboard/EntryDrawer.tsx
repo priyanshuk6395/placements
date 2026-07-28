@@ -38,6 +38,22 @@ export default function EntryDrawer() {
     setSubmitSuccess(null);
   };
 
+  // Convert native <input type="date"> value (YYYY-MM-DD) to the DD-MM-YYYY
+  // format required by the placement schema.
+  const toSchemaDate = (isoDate: string) => {
+    if (!isoDate) return "TBD";
+    const [year, month, day] = isoDate.split("-");
+    if (!year || !month || !day) return "TBD";
+    return `${day}-${month}-${year}`;
+  };
+
+  // Ensure the website has a protocol so it passes z.string().url().
+  const toSchemaUrl = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return "";
+    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -50,6 +66,8 @@ export default function EntryDrawer() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          website: toSchemaUrl(formData.website),
+          date: toSchemaDate(formData.date),
           batchYear: parseInt(formData.batchYear.split("-")[1], 10),
           ctc: formData.offerType !== "Internship" ? Number(formData.ctc || 0) : 0,
           stipend: formData.offerType === "Internship" ? Number(formData.stipend || 0) : 0,
@@ -59,7 +77,16 @@ export default function EntryDrawer() {
       const payload = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        const message = payload?.error || "Could not save this entry. Please review the form and try again.";
+        const detailMessages = Array.isArray(payload?.details)
+          ? payload.details
+              .map((d: any) => d?.message)
+              .filter(Boolean)
+              .join(" ")
+          : "";
+        const message =
+          detailMessages ||
+          payload?.error ||
+          "Could not save this entry. Please review the form and try again.";
         setSubmitError(message);
         return;
       }

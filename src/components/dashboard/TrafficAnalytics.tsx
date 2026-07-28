@@ -78,11 +78,11 @@ export default function TrafficAnalytics({ logs }: { logs: any[] }) {
           { title: "Avg Session", value: avgDuration, suffix: "s", icon: Clock, color: "text-emerald-400" },
           { title: "Top Region", value: topRegion, icon: Globe, color: "text-pink-400" },
         ].map((stat, i) => (
-          <div key={i} className="p-5 bg-slate-900/50 border border-white/5 rounded-2xl flex items-center gap-4">
+          <div key={i} className="p-5 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-2xl flex items-center gap-4 shadow-sm">
             <stat.icon className={`w-6 h-6 ${stat.color}`} />
             <div>
-              <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest">{stat.title}</p>
-              <h3 className="text-xl font-black">
+              <p className="text-[9px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-widest">{stat.title}</p>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white">
                 {typeof stat.value === "number" ? (
                   <>
                     <AnimatedNumber value={stat.value} />
@@ -101,8 +101,8 @@ export default function TrafficAnalytics({ logs }: { logs: any[] }) {
         <GeoDrilldown logs={logs} />
 
         <div className="space-y-6">
-          <div className="p-6 bg-slate-900/50 border border-white/5 rounded-3xl shadow-sm">
-            <h4 className="text-[10px] font-black uppercase text-slate-500 mb-4 flex items-center gap-2">
+          <div className="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-3xl shadow-sm">
+            <h4 className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-2">
               <Smartphone className="w-4 h-4 text-indigo-400" /> Device Mix
             </h4>
 
@@ -133,14 +133,14 @@ export default function TrafficAnalytics({ logs }: { logs: any[] }) {
 
             <div className="grid grid-cols-3 gap-2 mt-2">
               {deviceBreakdown.map((entry) => (
-                <div key={entry.name} className="p-3 rounded-xl bg-black/20 border border-white/5">
-                  <div className="flex items-center gap-1 text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                <div key={entry.name} className="p-3 rounded-xl bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/5">
+                  <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-wider">
                     {entry.name === "Mobile" ? <Smartphone className="w-3.5 h-3.5" /> : null}
                     {entry.name === "Tablet" ? <Tablet className="w-3.5 h-3.5" /> : null}
                     {entry.name === "Desktop" ? <Monitor className="w-3.5 h-3.5" /> : null}
                     {entry.name}
                   </div>
-                  <p className="text-base font-black text-slate-100 mt-1">
+                  <p className="text-base font-black text-slate-900 dark:text-slate-100 mt-1">
                     <AnimatedNumber value={entry.value} />
                   </p>
                 </div>
@@ -148,8 +148,8 @@ export default function TrafficAnalytics({ logs }: { logs: any[] }) {
             </div>
           </div>
 
-          <div className="p-6 bg-slate-900/50 border border-white/5 rounded-3xl shadow-sm">
-            <h4 className="text-[10px] font-black uppercase text-slate-500 mb-4 flex items-center gap-2">
+          <div className="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-3xl shadow-sm">
+            <h4 className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-amber-500" /> Hot Paths
             </h4>
             <div className="space-y-2.5">
@@ -157,15 +157,15 @@ export default function TrafficAnalytics({ logs }: { logs: any[] }) {
                 <div className="text-xs text-slate-500 py-4">No path data available.</div>
               ) : (
                 hotPaths.map((item, index) => (
-                  <div key={item.path} className="relative overflow-hidden p-2.5 bg-black/20 rounded-xl border border-white/5">
+                  <div key={item.path} className="relative overflow-hidden p-2.5 bg-slate-100 dark:bg-black/20 rounded-xl border border-slate-200 dark:border-white/5">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${item.width}%` }}
                       transition={{ duration: 0.45, delay: index * 0.05 }}
-                      className="absolute inset-y-0 left-0 rounded-xl bg-gradient-to-r from-amber-500/30 to-transparent"
+                      className="absolute inset-y-0 left-0 rounded-xl bg-linear-to-r from-amber-500/30 to-transparent"
                     />
                     <div className="relative z-10 flex justify-between items-center gap-3">
-                      <span className="text-[10px] font-mono text-slate-300 truncate" title={item.path}>{item.path}</span>
+                      <span className="text-[10px] font-mono text-slate-700 dark:text-slate-300 truncate" title={item.path}>{item.path}</span>
                       <span className="text-[10px] font-black text-amber-500">{item.count} hits</span>
                     </div>
                   </div>

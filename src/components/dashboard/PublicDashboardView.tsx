@@ -1,5 +1,6 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Activity,
   Award,
@@ -21,32 +22,48 @@ import {
 } from "recharts";
 import StatCard from "./StatCard";
 import PlacementTable from "./PlacementTable";
+import AnimatedNumber from "./AnimatedNumber";
+import { useMomentumData } from "@/hooks/useMomentumData";
 
 export default function PublicDashboardAnalytics({
   placements,
 }: {
   placements: any[];
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const { uniqueBatches, uniqueBranches } = useMomentumData(placements);
   const [activeBranch, setActiveBranch] = useState<string | null>(null);
+  const [activeBatch, setActiveBatch] = useState<string | null>(null);
 
-  // 1. Calculate unique batches and sort descending
-  const uniqueBatches = useMemo(
-    () =>
-      Array.from(
-        new Set(placements.map((p) => p.batchYear).filter(Boolean)),
-      ).sort((a, b) => b - a),
-    [placements],
-  );
+  useEffect(() => {
+    const batchParam = searchParams.get("batch");
+    const branchParam = searchParams.get("branch");
 
-  // 2. Default to the latest batch
-  const [activeBatch, setActiveBatch] = useState<string | null>(
-    uniqueBatches[0]?.toString() || null,
-  );
+    const batchFromUrl =
+      batchParam && uniqueBatches.some((b) => b.toString() === batchParam)
+        ? batchParam
+        : null;
+    const branchFromUrl =
+      branchParam && uniqueBranches.includes(branchParam) ? branchParam : null;
 
-  const uniqueBranches = useMemo(
-    () => Array.from(new Set(placements.map((p) => p.branch).filter(Boolean))),
-    [placements],
-  );
+    setActiveBatch(batchFromUrl || uniqueBatches[0]?.toString() || null);
+    setActiveBranch(branchFromUrl);
+  }, [searchParams, uniqueBatches, uniqueBranches]);
+
+  const syncParams = (nextBatch: string | null, nextBranch: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextBatch) params.set("batch", nextBatch);
+    else params.delete("batch");
+
+    if (nextBranch) params.set("branch", nextBranch);
+    else params.delete("branch");
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
 
   // 3. Filtered Data
   const filteredPlacements = useMemo(() => {
@@ -58,65 +75,7 @@ export default function PublicDashboardAnalytics({
     });
   }, [placements, activeBranch, activeBatch]);
 
-  // 4. Momentum Chart Logic — updated to use string labels
-  const momentumData = useMemo(() => {
-    const parseDate = (val: string | number) => {
-      if (!val) return null;
-      const str = String(val).trim();
-
-      // Excel serial (5 digits)
-      if (/^\d{5}$/.test(str))
-        return new Date((parseInt(str) - 25569) * 86400 * 1000);
-
-      // ISO format: YYYY-MM-DD
-      if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
-        const d = new Date(str);
-        return isNaN(d.getTime()) ? null : d;
-      }
-
-      // Indian format: DD-MM-YYYY
-      if (/^\d{2}-\d{2}-\d{4}$/.test(str)) {
-        const [day, month, year] = str.split("-");
-        const d = new Date(`${year}-${month}-${day}`);
-        return isNaN(d.getTime()) ? null : d;
-      }
-
-      // Fallback
-      const d = new Date(str.replace(/-/g, "/"));
-      return isNaN(d.getTime()) ? null : d;
-    };
-
-    const sorted = [...filteredPlacements]
-      .filter((p) => p.date && parseDate(p.date))
-      .sort(
-        (a, b) =>
-          (parseDate(a.date)?.getTime() || 0) -
-          (parseDate(b.date)?.getTime() || 0),
-      );
-
-    const grouped: Record<string, number> = {};
-    sorted.forEach((p) => {
-      const d = parseDate(p.date);
-      if (!d) return;
-      // Use a sortable string key: "YYYY-MM"
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      grouped[key] = (grouped[key] || 0) + 1;
-    });
-
-    let cumulative = 0;
-    return Object.keys(grouped)
-      .sort()
-      .map((key) => {
-        cumulative += grouped[key];
-        const [year, month] = key.split("-");
-        const label = new Date(
-          Number(year),
-          Number(month) - 1,
-          1,
-        ).toLocaleDateString("en-US", { month: "short", year: "2-digit" });
-        return { label, cumulative };
-      });
-  }, [filteredPlacements]);
+  const { momentumData } = useMomentumData(filteredPlacements);
 
   return (
     <div className="w-full space-y-8">
@@ -136,7 +95,11 @@ export default function PublicDashboardAnalytics({
           {uniqueBatches.map((batch) => (
             <button
               key={batch}
-              onClick={() => setActiveBatch(batch.toString())}
+              onClick={() => {
+                const selected = batch.toString();
+                setActiveBatch(selected);
+                syncParams(selected, activeBranch);
+              }}
               className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${activeBatch === batch.toString() ? "bg-emerald-600 text-white shadow-lg" : "bg-white dark:bg-slate-800 text-slate-500"}`}
             >
               {batch}
@@ -149,7 +112,10 @@ export default function PublicDashboardAnalytics({
             Branch:
           </span>
           <button
-            onClick={() => setActiveBranch(null)}
+            onClick={() => {
+              setActiveBranch(null);
+              syncParams(activeBatch, null);
+            }}
             className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${!activeBranch ? "bg-blue-600 text-white shadow-lg" : "bg-white dark:bg-slate-800 text-slate-500"}`}
           >
             Global
@@ -157,7 +123,11 @@ export default function PublicDashboardAnalytics({
           {uniqueBranches.map((branch) => (
             <button
               key={branch}
-              onClick={() => setActiveBranch(branch)}
+              title={branch}
+              onClick={() => {
+                setActiveBranch(branch);
+                syncParams(activeBatch, branch);
+              }}
               className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${activeBranch === branch ? "bg-blue-600 text-white shadow-lg" : "bg-white dark:bg-slate-800 text-slate-500"}`}
             >
               {branch}
@@ -246,39 +216,59 @@ export default function PublicDashboardAnalytics({
 
       {/* STAT CARDS */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Offers Secured"
-          value={filteredPlacements.length}
-          icon={Users}
-          color="text-emerald-500"
-        />
-        <StatCard
-          title="Avg CTC"
-          value={(
-            filteredPlacements.reduce((acc, curr) => acc + (curr.ctc || 0), 0) /
-            (filteredPlacements.length || 1)
-          ).toFixed(1)}
-          suffix="LPA"
-          icon={TrendingUp}
-          color="text-indigo-500"
-        />
-        <StatCard
-          title="Peak CTC"
-          value={
-            filteredPlacements.length > 0
-              ? Math.max(...filteredPlacements.map((d) => d.ctc || 0))
-              : 0
-          }
-          suffix="LPA"
-          icon={Award}
-          color="text-amber-500"
-        />
-        <StatCard
-          title="Recruiters"
-          value={new Set(filteredPlacements.map((d) => d.company)).size}
-          icon={Briefcase}
-          color="text-pink-500"
-        />
+        {[
+          {
+            title: "Offers Secured",
+            value: filteredPlacements.length,
+            icon: Users,
+            color: "text-emerald-500",
+            decimals: 0,
+          },
+          {
+            title: "Avg CTC",
+            value:
+              filteredPlacements.reduce((acc, curr) => acc + (curr.ctc || 0), 0) /
+              (filteredPlacements.length || 1),
+            icon: TrendingUp,
+            suffix: "LPA",
+            color: "text-indigo-500",
+            decimals: 1,
+          },
+          {
+            title: "Peak CTC",
+            value:
+              filteredPlacements.length > 0
+                ? Math.max(...filteredPlacements.map((d) => d.ctc || 0))
+                : 0,
+            icon: Award,
+            suffix: "LPA",
+            color: "text-amber-500",
+            decimals: 1,
+          },
+          {
+            title: "Recruiters",
+            value: new Set(filteredPlacements.map((d) => d.company)).size,
+            icon: Briefcase,
+            color: "text-pink-500",
+            decimals: 0,
+          },
+        ].map((item) => (
+          <StatCard
+            key={item.title}
+            title={item.title}
+            value={(
+              <AnimatedNumber
+                value={Number(item.value || 0)}
+                format={(n) =>
+                  item.decimals > 0 ? n.toFixed(item.decimals) : Math.round(n).toLocaleString()
+                }
+              />
+            ) as unknown as number}
+            suffix={item.suffix}
+            icon={item.icon}
+            color={item.color}
+          />
+        ))}
       </div>
 
       <PlacementTable data={filteredPlacements} />

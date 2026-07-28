@@ -27,6 +27,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMomentumData } from "@/hooks/useMomentumData";
 
 // Component Imports
 import StatCard from "./StatCard";
@@ -36,6 +37,7 @@ import EntryDrawer from "./EntryDrawer";
 import TrafficAnalytics from "./TrafficAnalytics";
 import VisitorLedger from "./VisitorLedger";
 import DownloadAllData from "./DownloadAllData";
+import AnimatedNumber from "./AnimatedNumber";
 
 interface DashboardClientProps {
   placements: any[];
@@ -94,10 +96,7 @@ export default function DashboardClient({
   const [activeBranch, setActiveBranch] = useState<string | null>(null);
 
   // --- DATA PROCESSING LOGIC ---
-  const uniqueBranches = useMemo(
-    () => Array.from(new Set(placements.map((p) => p.branch).filter(Boolean))),
-    [placements],
-  );
+  const { momentumData, uniqueBranches } = useMomentumData(placements);
 
   const filteredPlacements = useMemo(() => {
     if (!activeBranch) return placements;
@@ -138,52 +137,6 @@ export default function DashboardClient({
       })
       .sort((a, b) => b.avgCtc - a.avgCtc);
   }, [placements, uniqueBranches]);
-
-  const timeSeriesData = useMemo(() => {
-    const parseDate = (val: string | number) => {
-      if (!val) return null;
-      const str = String(val).trim();
-      if (/^\d{4,5}$/.test(str))
-        return new Date((parseInt(str) - 25569) * 86400 * 1000);
-      if (str.includes("-") || str.includes("/")) {
-        const sep = str.includes("-") ? "-" : "/";
-        const parts = str.split(sep);
-        if (parts.length === 3) {
-          if (parts[2].length === 4)
-            return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-          if (parts[0].length === 4)
-            return new Date(`${parts[0]}-${parts[1]}-${parts[2]}`);
-        }
-      }
-      const fallback = new Date(str);
-      return isNaN(fallback.getTime()) ? null : fallback;
-    };
-
-    const sorted = [...placements]
-      .filter((p) => p.date && parseDate(p.date))
-      .sort(
-        (a, b) =>
-          (parseDate(a.date)?.getTime() || 0) -
-          (parseDate(b.date)?.getTime() || 0),
-      );
-
-    const grouped: Record<string, number> = {};
-    sorted.forEach((p) => {
-      const d = parseDate(p.date);
-      if (!d) return;
-      const monthYear =
-        d.toLocaleString("default", { month: "short" }) +
-        " '" +
-        d.getFullYear().toString().slice(2);
-      grouped[monthYear] = (grouped[monthYear] || 0) + 1;
-    });
-
-    let cumulative = 0;
-    return Object.keys(grouped).map((key) => {
-      cumulative += grouped[key];
-      return { name: key, placed: grouped[key], cumulative };
-    });
-  }, [placements]);
 
   // --- UI RENDER ---
   return (
@@ -249,32 +202,28 @@ export default function DashboardClient({
           >
             {/* KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              <StatCard
-                title="Average CTC"
-                value={dynamicStats.avg.toFixed(2)}
-                suffix="LPA"
-                icon={TrendingUp}
-                color="text-indigo-600 dark:text-indigo-400"
-              />
-              <StatCard
-                title="Total Offers"
-                value={dynamicStats.total}
-                icon={Users}
-                color="text-emerald-600 dark:text-emerald-400"
-              />
-              <StatCard
-                title="Highest Offer"
-                value={dynamicStats.highest}
-                suffix="LPA"
-                icon={Award}
-                color="text-amber-600 dark:text-amber-400"
-              />
-              <StatCard
-                title="Recruiters"
-                value={dynamicStats.companies}
-                icon={Briefcase}
-                color="text-pink-600 dark:text-pink-400"
-              />
+              {[
+                { title: "Average CTC", value: dynamicStats.avg, icon: TrendingUp, suffix: "LPA", color: "text-indigo-600 dark:text-indigo-400", decimals: 2 },
+                { title: "Total Offers", value: dynamicStats.total, icon: Users, color: "text-emerald-600 dark:text-emerald-400", decimals: 0 },
+                { title: "Highest Offer", value: dynamicStats.highest, icon: Award, suffix: "LPA", color: "text-amber-600 dark:text-amber-400", decimals: 2 },
+                { title: "Recruiters", value: dynamicStats.companies, icon: Briefcase, color: "text-pink-600 dark:text-pink-400", decimals: 0 },
+              ].map((item) => (
+                <StatCard
+                  key={item.title}
+                  title={item.title}
+                  value={(
+                    <AnimatedNumber
+                      value={Number(item.value || 0)}
+                      format={(n) =>
+                        item.decimals > 0 ? n.toFixed(item.decimals) : Math.round(n).toLocaleString()
+                      }
+                    />
+                  ) as unknown as number}
+                  suffix={item.suffix}
+                  icon={item.icon}
+                  color={item.color}
+                />
+              ))}
             </div>
 
             {/* Momentum Chart */}
@@ -284,7 +233,7 @@ export default function DashboardClient({
                 Momentum
               </h4>
               <div className="flex-1 w-full -ml-4 relative">
-                {timeSeriesData.length === 0 ? (
+                {momentumData.length === 0 ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 ml-4">
                     <Activity className="w-8 h-8 opacity-20 mb-2" />
                     <p className="text-xs font-medium">
@@ -294,7 +243,7 @@ export default function DashboardClient({
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
-                      data={timeSeriesData}
+                      data={momentumData}
                       margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
                     >
                       <defs>
@@ -324,7 +273,7 @@ export default function DashboardClient({
                         className="text-slate-200 dark:text-slate-800"
                       />
                       <XAxis
-                        dataKey="name"
+                        dataKey="label"
                         stroke="currentColor"
                         className="text-slate-400"
                         fontSize={11}
@@ -430,6 +379,7 @@ export default function DashboardClient({
                 {uniqueBranches.map((branch) => (
                   <button
                     key={branch}
+                    title={branch}
                     onClick={() => setActiveBranch(branch)}
                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${activeBranch === branch ? "bg-indigo-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}
                   >

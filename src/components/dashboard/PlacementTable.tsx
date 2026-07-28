@@ -106,7 +106,7 @@ export default function PlacementTable({ data = [] }: { data: any[] }) {
 
   return (
     <>
-      <div className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-3xl shadow-sm dark:shadow-2xl overflow-hidden flex flex-col h-[600px] xl:h-[800px] glass">
+      <div className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-3xl shadow-sm dark:shadow-2xl overflow-hidden flex flex-col md:h-[600px] xl:h-[800px] glass">
         
         {/* Header Section */}
         <div className="p-4 md:p-6 border-b border-slate-200 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-slate-900/80 z-20">
@@ -130,7 +130,7 @@ export default function PlacementTable({ data = [] }: { data: any[] }) {
         </div>
 
         {/* Responsive Table */}
-        <div className="overflow-y-auto overflow-x-auto flex-1 custom-scrollbar">
+        <div className="overflow-x-auto md:overflow-y-auto md:flex-1 custom-scrollbar">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead className="sticky top-0 z-10 bg-slate-50/80 dark:bg-[#0f172a]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/10">
               <tr className="text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-[0.2em]">
@@ -167,6 +167,9 @@ export default function PlacementTable({ data = [] }: { data: any[] }) {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white shrink-0 lg:hidden">
+                          <CompanyLogo src={student.offers?.[0]?.logoData} name={student.offers?.[0]?.company || student.name} />
+                        </div>
                         <div className="hidden sm:flex w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 text-primary items-center justify-center font-black text-xs border border-primary/20 shrink-0 shadow-inner">
                           {student.name.charAt(0).toUpperCase()}
                         </div>
