@@ -7,7 +7,7 @@ export default withAuth(
   },
   {
     callbacks: {
-      // Only require a token for the routes matched below
+      // Require a token for all protected routes
       authorized: ({ token }) => !!token,
     },
     pages: {
@@ -17,7 +17,13 @@ export default withAuth(
 );
 
 export const config = {
-  // CRITICAL FIX: We now ONLY lock the /admin route. 
-  // The public '/' route and '/api/traffic' are now completely open.
-  matcher: ["/admin/:path*"],
+  // SECURITY FIX: Protect all data-mutating endpoints and admin panel
+  // Public endpoints: '/', '/login', '/api/traffic' (read-only telemetry)
+  matcher: [
+    "/admin/:path*",
+    "/api/upload/:path*",
+    "/api/placement/:path*",
+    "/api/export/:path*",
+    "/api/visitor/:path*",
+  ],
 };

@@ -192,21 +192,48 @@ export default function DashboardClient({
       <div className="flex flex-wrap gap-2 p-1.5 bg-slate-100 dark:bg-slate-900/50 rounded-full w-fit border border-slate-200 dark:border-white/10 shadow-sm mb-8">
         <button
           onClick={() => setActiveTab("preview")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all ${activeTab === "preview" ? "bg-primary text-white shadow-lg" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"}`}
+          className={`relative overflow-hidden flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all ${activeTab === "preview" ? "text-white" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"}`}
         >
-          <Database className="w-4 h-4" /> Database Preview
+          {activeTab === "preview" ? (
+            <motion.span
+              layoutId="activeTabPill"
+              className="absolute inset-0 rounded-full bg-primary shadow-lg"
+              transition={{ type: "spring", stiffness: 360, damping: 32 }}
+            />
+          ) : null}
+          <span className="relative z-10 inline-flex items-center gap-2">
+            <Database className="w-4 h-4" /> Database Preview
+          </span>
         </button>
         <button
           onClick={() => setActiveTab("update")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all ${activeTab === "update" ? "bg-primary text-white shadow-lg" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"}`}
+          className={`relative overflow-hidden flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all ${activeTab === "update" ? "text-white" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"}`}
         >
-          <UploadCloud className="w-4 h-4" /> Add & Update
+          {activeTab === "update" ? (
+            <motion.span
+              layoutId="activeTabPill"
+              className="absolute inset-0 rounded-full bg-primary shadow-lg"
+              transition={{ type: "spring", stiffness: 360, damping: 32 }}
+            />
+          ) : null}
+          <span className="relative z-10 inline-flex items-center gap-2">
+            <UploadCloud className="w-4 h-4" /> Add & Update
+          </span>
         </button>
         <button
           onClick={() => setActiveTab("analytics")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all ${activeTab === "analytics" ? "bg-primary text-white shadow-lg" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"}`}
+          className={`relative overflow-hidden flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all ${activeTab === "analytics" ? "text-white" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"}`}
         >
-          <Map className="w-4 h-4" /> Views & Location
+          {activeTab === "analytics" ? (
+            <motion.span
+              layoutId="activeTabPill"
+              className="absolute inset-0 rounded-full bg-primary shadow-lg"
+              transition={{ type: "spring", stiffness: 360, damping: 32 }}
+            />
+          ) : null}
+          <span className="relative z-10 inline-flex items-center gap-2">
+            <Map className="w-4 h-4" /> Views & Location
+          </span>
         </button>
       </div>
 

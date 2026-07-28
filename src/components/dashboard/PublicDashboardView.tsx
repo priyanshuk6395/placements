@@ -118,9 +118,6 @@ export default function PublicDashboardAnalytics({
       });
   }, [filteredPlacements]);
 
-  console.log(momentumData);
-  console.log(placements.slice(0, 5).map((p) => p.date));
-
   return (
     <div className="w-full space-y-8">
       {/* FILTER SECTION */}

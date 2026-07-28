@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/dbConnect';
+import { requireAuth, unauthorizedResponse } from '@/lib/auth';
 import Placement from '@/models/Placement';
 import * as XLSX from 'xlsx';
 
 export async function GET() {
   try {
+    // SECURITY FIX: Require authentication
+    const session = await requireAuth();
+    if (!session) {
+      return unauthorizedResponse("You must be logged in to export data");
+    }
+
     await dbConnect();
     const allPlacements = await Placement.find({}).lean();
 
@@ -45,6 +52,7 @@ export async function GET() {
       },
     });
   } catch (error) {
+    console.error("Export error:", error);
     return NextResponse.json({ error: "Failed to export data" }, { status: 500 });
   }
 }
